@@ -3,6 +3,7 @@ const { body, validationResult } = require('express-validator');
 const Player = require('../models/Player');
 const router = express.Router();
 const mongoose = require('mongoose');
+const logger = require('../logger');
 
 const validatePlayer = [
   body('playerId').notEmpty().trim().escape(),
@@ -32,6 +33,7 @@ router.post(
     if (!errors.isEmpty()) {
       const missingFields = errors.array().map((error) => error.path);
 
+      logger.warn(`Missing fields: ${missingFields.join(', ')}`);
       return res.status(400).json({
         message: 'Missing required field(s)',
         fields: missingFields
@@ -52,6 +54,7 @@ router.post(
       });
 
       await newPlayer.save();
+      logger.info(`Player added: ${newPlayer._id}`);
 
       res.status(201).json({ 
         message: 'Player added successfully!', 
@@ -60,6 +63,7 @@ router.post(
       });
     } catch (error) {
       console.error(error);
+      logger.error(`Server error: ${error.message}`);
       res.status(500).json({ message: 'Server error' });
     }
   }
@@ -69,18 +73,21 @@ router.get('/:playerId', async (req, res) => {
   const { playerId } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(playerId)) {
+    logger.error(`Invalid playerId: ${playerId}`);
     return res.status(400).json({ message: 'Invalid playerId format' });
   }
 
   try {
     const player = await Player.findById(playerId);
     if (!player) {
+      logger.warn(`Player not found: ${playerId}`); 
       return res.status(404).json({ message: 'Player not found' });
     }
 
     res.status(200).json(player);
   } catch (error) {
     console.error(error);
+    logger.error(`Server error: ${error.message}`);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -90,6 +97,7 @@ router.put('/:playerId', async (req, res) => {
   const { name, country, totalEarnings, weeklyEarnings, rank, dailyDiff } = req.body;
 
   if (!mongoose.Types.ObjectId.isValid(playerId)) {
+    logger.warn(`Invalid playerId format: ${playerId}`);
     return res.status(400).json({ message: 'Invalid playerId format' });
   }
 
@@ -101,12 +109,15 @@ router.put('/:playerId', async (req, res) => {
     );
 
     if (!updatedPlayer) {
+      logger.warn(`Player not found: ${playerId}`);
       return res.status(404).json({ message: 'Player not found' });
     }
 
+    logger.info(`Player retrieved: ${playerId}`);
     res.status(200).json({ message: 'Player updated successfully', player: updatedPlayer });
   } catch (error) {
     console.error(error);
+    logger.error(`Server error: ${error.message}`);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -114,17 +125,19 @@ router.put('/:playerId', async (req, res) => {
 router.delete('/:playerId', async (req, res) => {
   const { playerId } = req.params;
 
-  // Check if playerId is valid
   if (!mongoose.Types.ObjectId.isValid(playerId)) {
+    logger.warn(`Invalid playerId format: ${playerId}`);
     return res.status(400).json({ message: 'Invalid playerId format' });
   }
 
   try {
     const deletedPlayer = await Player.findByIdAndDelete(playerId);
     if (!deletedPlayer) {
+      logger.warn(`Player not found: ${playerId}`);
       return res.status(404).json({ message: 'Player not found' });
     }
 
+    logger.info(`Player deleted: ${playerId}`);
     res.status(200).json({ message: 'Player deleted successfully' });
   } catch (error) {
     console.error(error);
@@ -135,11 +148,38 @@ router.delete('/:playerId', async (req, res) => {
 router.get('/', async (req, res) => {
   try {
     const players = await Player.find();
+    logger.info('Players retrieved');
     res.status(200).json(players);
   } catch (error) {
     console.error(error);
+    logger.error(`Server error: ${error.message}`);
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+/*
+router.get('/', async (req, res) => {
+  const { page = 1, limit = 20 } = req.query;
+
+  try {
+    const players = await Player.find()
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+
+    const count = await Player.countDocuments();
+    logger.info(`Players retrieved with pagination. Page: ${page}, Limit: ${limit}`);
+
+    res.status(200).json({
+      players,
+      totalPages: Math.ceil(count / limit),
+      currentPage: page
+    });
+  } catch (error) {
+    console.error(error);
+    logger.error(`Server error: ${error.message}`);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+*/
 
 module.exports = router;

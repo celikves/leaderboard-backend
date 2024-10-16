@@ -15,10 +15,18 @@
 // });
 
 const express = require('express');
-const connectDB = require('./db'); // Your MongoDB connection via Mongoose
-require('dotenv').config(); // Load environment variables
+const connectDB = require('./db');
+require('dotenv').config();
+const morgan = require('morgan');
+const logger = require('./logger');
 
 const app = express();
+
+app.use(morgan('combined', {
+  stream: {
+    write: (message) => logger.info(message.trim())
+  }
+}));
 
 // Middleware to parse JSON request bodies
 app.use(express.json()); // This will allow your app to parse incoming JSON requests
@@ -26,11 +34,10 @@ app.use(express.json()); // This will allow your app to parse incoming JSON requ
 // Connect to MongoDB
 connectDB();
 
-const playerRoutes = require('./routes/player');  // Import player routes
-app.use('/players', playerRoutes);  // Use the routes under '/players' path
+const playerRoutes = require('./routes/player');
+app.use('/players', playerRoutes);
 
 
-// Define a simple route to test the server
 app.get('/', (req, res) => {
   res.send('API is running...');
 });
