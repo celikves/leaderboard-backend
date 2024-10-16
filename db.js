@@ -31,14 +31,11 @@ const uri = process.env.MONGO_URI;
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(uri);  // No options needed
     console.log("MongoDB connected with Mongoose!");
   } catch (error) {
     console.error("MongoDB connection error:", error);
-    process.exit(1);
+    process.exit(1);  // Exit process if connection fails
   }
 };
 

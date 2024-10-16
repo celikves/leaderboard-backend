@@ -39,7 +39,7 @@ app.get('/', (req, res) => {
 // const userRoutes = require('./routes/user');
 // app.use('/users', userRoutes); // Uncomment once you add your routes
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3005;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
