@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const { Schema, model } = mongoose;
 
 const PlayerSchema = new Schema({
-  playerId: { type: String, required: true, unique: true },
   name: { type: String, required: true },
   country: { type: String, required: true },
   totalEarnings: { type: Number, default: 0 },
