@@ -85,4 +85,61 @@ router.get('/:playerId', async (req, res) => {
   }
 });
 
+router.put('/:playerId', async (req, res) => {
+  const { playerId } = req.params;
+  const { name, country, totalEarnings, weeklyEarnings, rank, dailyDiff } = req.body;
+
+  if (!mongoose.Types.ObjectId.isValid(playerId)) {
+    return res.status(400).json({ message: 'Invalid playerId format' });
+  }
+
+  try {
+    const updatedPlayer = await Player.findByIdAndUpdate(
+      playerId,
+      { name, country, totalEarnings, weeklyEarnings, rank, dailyDiff },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedPlayer) {
+      return res.status(404).json({ message: 'Player not found' });
+    }
+
+    res.status(200).json({ message: 'Player updated successfully', player: updatedPlayer });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.delete('/:playerId', async (req, res) => {
+  const { playerId } = req.params;
+
+  // Check if playerId is valid
+  if (!mongoose.Types.ObjectId.isValid(playerId)) {
+    return res.status(400).json({ message: 'Invalid playerId format' });
+  }
+
+  try {
+    const deletedPlayer = await Player.findByIdAndDelete(playerId);
+    if (!deletedPlayer) {
+      return res.status(404).json({ message: 'Player not found' });
+    }
+
+    res.status(200).json({ message: 'Player deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.get('/', async (req, res) => {
+  try {
+    const players = await Player.find();
+    res.status(200).json(players);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 module.exports = router;
