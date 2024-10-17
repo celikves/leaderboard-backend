@@ -13,6 +13,7 @@ This backend application is designed for a high-traffic game leaderboard system,
 - **MongoDB Atlas**: Cloud-based NoSQL database for storing player profiles and other infrequently changing data.
 - **Redis**: In-memory data structure store used for fast, real-time leaderboard operations.
 - **Nginx**: Web server and load balancer, distributing incoming requests across multiple Node.js instances.
+- **Winston & Morgan**: Logging libraries used to log important activities and request information in the application.
 
 ## Architecture
 
