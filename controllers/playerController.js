@@ -3,7 +3,6 @@ const logger = require('../logger');
 const { validationResult } = require('express-validator');
 const mongoose = require('mongoose');
 
-// Add a new player
 const addPlayer = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -30,7 +29,6 @@ const addPlayer = async (req, res) => {
     }
 };
 
-// Get player by ID
 const getPlayerById = async (req, res) => {
     const { playerId } = req.params;
 
@@ -52,7 +50,6 @@ const getPlayerById = async (req, res) => {
     }
 };
 
-// Update player
 const updatePlayer = async (req, res) => {
     const { playerId } = req.params;
     const updates = req.body;
@@ -76,7 +73,6 @@ const updatePlayer = async (req, res) => {
     }
 };
 
-// Delete player
 const deletePlayer = async (req, res) => {
     const { playerId } = req.params;
 
@@ -99,7 +95,6 @@ const deletePlayer = async (req, res) => {
     }
 };
 
-// Get all players
 const getAllPlayers = async (req, res) => {
     try {
         const players = await playerService.getAllPlayers();
@@ -111,7 +106,6 @@ const getAllPlayers = async (req, res) => {
     }
 };
 
-// Get players with pagination
 const getPlayersWithPagination = async (req, res) => {
     const { page = 1, limit = 20 } = req.query;
 

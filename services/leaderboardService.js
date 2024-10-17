@@ -7,20 +7,17 @@ async function getTopPlayers(limit) {
     try {
         const leaderboardData = await redisClient.zRange('leaderboard_earnings', 0, limit - 1, { REV: true, WITHSCORES: true });
 
-        console.log('Leaderboard data:', leaderboardData);
-
         const leaderboard = [];
         for (let i = 0; i < leaderboardData.length; i += 2) {
             const playerId = leaderboardData[i];
             const earnings = parseFloat(leaderboardData[i + 1]);
 
-            // Fetch player details from MongoDB
             const playerDetails = await playerService.getPlayerById(playerId);
 
             leaderboard.push({
                 playerId,
                 earnings,
-                rank: i / 2 + 1, // Calculate the rank based on the index
+                rank: i / 2 + 1,
                 name: playerDetails ? playerDetails.name : 'Unknown',
                 country: playerDetails ? playerDetails.country : 'Unknown'
             });
@@ -29,27 +26,22 @@ async function getTopPlayers(limit) {
         return leaderboard;
     } catch (error) {
         console.error('Error fetching leaderboard:', error);
-        throw error; // Rethrow or handle as appropriate
+        throw error; 
     }
 }
 
 // Add earnings for a player in Redis
 async function addEarnings(playerId, earnings) {
-    // Add earnings in Redis
     await redisClient.zAdd('leaderboard_earnings', { score: earnings, value: playerId });
 
-    // After adding earnings, fetch the new rank
     const currentRank = await redisClient.zRevRank('leaderboard_earnings', playerId);
-    console.log('Current rank:', currentRank);
 
     if (currentRank !== null) {
-        // Fetch yesterdayRank from MongoDB
         const player = await playerService.getPlayerById(playerId);
 
         if (player && player.yesterdayRank !== undefined) {
-            const dailyDiff = player.yesterdayRank - currentRank;  // Calculate the daily diff
+            const dailyDiff = player.yesterdayRank - currentRank;
 
-            // Store dailyDiff in Redis
             await storeDailyDiff(playerId, dailyDiff);
 
             return {
@@ -64,22 +56,18 @@ async function addEarnings(playerId, earnings) {
     };
 }
 
-// Store dailyDiff in Redis
 async function storeDailyDiff(playerId, dailyDiff) {
     await redisClient.set(`${playerId}:dailyDiff`, dailyDiff);
 }
 
-// Get a player's current rank
 async function getPlayerRank(playerId) {
     return redisClient.zRevRank('leaderboard_earnings', playerId);
 }
 
-// Reset earnings (for cron job)
 async function resetEarnings() {
     return redisClient.del('leaderboard_earnings');
 }
 
-// Calculate total prize (2% of total earnings)
 async function calculateTotalPrize() {
     const earnings = await redisClient.zRangeWithScores('leaderboard_earnings', 0, -1);
     let totalEarnings = 0;
@@ -88,7 +76,7 @@ async function calculateTotalPrize() {
         totalEarnings += player.score;
     });
 
-    const totalPrize = totalEarnings * 0.02;  // 2% of total earnings
+    const totalPrize = totalEarnings * 0.02;
     return { totalPrize };
 }
 

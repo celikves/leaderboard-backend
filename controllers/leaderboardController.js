@@ -1,16 +1,12 @@
 const leaderboardService = require('../services/leaderboardService');
 const logger = require('../logger');
 
-
-// Get the leaderboard with optional playerId for surrounding ranks
 const getLeaderboard = async (req, res) => {
     try {
-        const { playerId } = req.query; // Optional playerId parameter
+        const { playerId } = req.query;
 
-        // Fetch top 100 players
         const top100 = await leaderboardService.getTopPlayers(100);
 
-        // If playerId is provided, calculate surrounding players
         if (playerId) {
             const playerRank = await leaderboardService.getPlayerRank(playerId);
             if (playerRank >= 100) {
@@ -29,9 +25,9 @@ const getLeaderboard = async (req, res) => {
         res.status(500).send('Failed to retrieve leaderboard.');
     }
 };
-// Add earnings for a player
+
 const addEarnings = async (req, res) => {
-    const { playerId } = req.params;  // playerId from request params
+    const { playerId } = req.params;
     const { earnings } = req.body;
 
     if (!playerId || !earnings || isNaN(earnings)) {

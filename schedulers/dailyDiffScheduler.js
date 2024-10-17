@@ -8,19 +8,15 @@ cron.schedule('59 59 23 * * *', async () => {
     logger.info('Running daily rank capture...');
 
     try {
-        // Fetch all players from MongoDB
         const players = await playerService.getAllPlayers();
 
         for (let player of players) {
             const playerId = player.playerId;
 
-            // Get the player's current rank from Redis
             const currentRank = await leaderboardService.getPlayerRank(playerId);
 
             if (currentRank !== null) {
-                // Store yesterdayRank in MongoDB for the player using playerId
                 await playerService.updatePlayer(playerId, { yesterdayRank: currentRank });
-
                 logger.info(`Player ${playerId} yesterdayRank updated: ${currentRank}`);
             }
         }
