@@ -1,15 +1,12 @@
 const express = require('express');
-const Player = require('../models/Player');
+const leaderboardController = require('../controllers/leaderboardController');
+
 const router = express.Router();
 
-router.get('/', async (req, res) => {
-  try {
-    const topPlayers = await Player.find().sort({ weeklyEarnings: -1 }).limit(100);
-    res.json(topPlayers);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
+// Get leaderboard
+router.get('/', leaderboardController.getLeaderboard);
+
+// Add earnings for a specific player
+router.post('/add-earnings/:playerId', leaderboardController.addEarnings);
 
 module.exports = router;
