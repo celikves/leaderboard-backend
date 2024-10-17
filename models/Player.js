@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const { Schema, model } = mongoose;
 
 const PlayerSchema = new Schema({
+  playerId: { type: mongoose.Schema.Types.ObjectId, auto: true },
   name: { type: String, required: true },
   country: { type: String, required: true },
   totalEarnings: { type: Number, default: 0 },
