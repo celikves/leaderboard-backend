@@ -2,13 +2,17 @@
 
 ## Overview
 
+This README provides a comprehensive guide to the backend application, covering its architecture, setup, and usage. The load balancer configuration ensures scalability, while MongoDB and Redis support efficient data management and real-time leaderboard operations.
+
 This backend application is designed for a high-traffic game leaderboard system, capable of handling thousands of active players. The leaderboard ranks players based on the money they've earned since the start of the week and resets weekly. The top 100 players are rewarded with in-game currency according to their rankings.
+
 
 ## Technologies Used
 
 - **Node.js**: Server-side JavaScript runtime for building scalable network applications.
 - **MongoDB Atlas**: Cloud-based NoSQL database for storing player profiles and other infrequently changing data.
 - **Redis**: In-memory data structure store used for fast, real-time leaderboard operations.
+- **Nginx**: Web server and load balancer, distributing incoming requests across multiple Node.js instances.
 
 ## Architecture
 
@@ -133,3 +137,4 @@ Redis handles data that requires rapid read/write operations:
 This project is licensed under the MIT License.
 
 ---
+
