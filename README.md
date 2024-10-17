@@ -16,6 +16,9 @@ This backend application is designed for a high-traffic game leaderboard system,
 
 ## Architecture
 
+![App Architecture](./assets/architecture.jpeg)
+
+
 ### MongoDB
 
 MongoDB is utilized for storing player information that doesn't require frequent updates:
