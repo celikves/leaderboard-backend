@@ -17,12 +17,12 @@ async function getPlayerById(playerId) {
     return await Player.findOne({ playerId });
 }
 
-// async function getPlayerById(playerId) {
-//     return Player.findOne({ playerId: playerId });
-// }
-
 async function getAllPlayers() {
     return await Player.find();
+}
+
+async function updateAllPlayers(updateFields) {
+    return await Player.updateMany({}, { $set: updateFields });
 }
 
 async function getPlayersWithPagination(page, limit) {
@@ -44,5 +44,6 @@ module.exports = {
     deletePlayer,
     getPlayerById,
     getAllPlayers,
+    updateAllPlayers,
     getPlayersWithPagination
 };

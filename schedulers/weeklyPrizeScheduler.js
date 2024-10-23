@@ -3,14 +3,17 @@ const leaderboardService = require('../services/leaderboardService');
 const playerService = require('../services/playerService');
 const logger = require('../logger');
 
-// Cronjob to run every Sunday at 23:59:59
-cron.schedule('59 59 23 * * 0', async () => {  // Run every Sunday at 23:59:59
+cron.schedule('59 59 23 * * 0', async () => {
+    await distributeWeeklyPrizes();
+});
+
+async function distributeWeeklyPrizes() {
     logger.info('Running weekly prize pool distribution...');
 
     try {
         const { totalPrize } = await leaderboardService.calculateTotalPrize();
 
-        const top100 = await leaderboardService.getTopPlayers(100);
+        const top100 = await leaderboardService.getTop100Players();
 
         if (!top100 || top100.length < 2) {
             logger.warn("Not enough players in the leaderboard.");
@@ -22,7 +25,7 @@ cron.schedule('59 59 23 * * 0', async () => {  // Run every Sunday at 23:59:59
         const prizeDistribution = {
             1: 0.20,
             2: 0.15,
-            3: 0.10 
+            3: 0.10
         };
 
         let remainingPool = totalPrize;
@@ -48,11 +51,13 @@ cron.schedule('59 59 23 * * 0', async () => {  // Run every Sunday at 23:59:59
         }
 
         await leaderboardService.resetEarnings();
-        // TODO : Store all players in the leaderboard 
-        // await leaderboardService.storeAllPlayers();
         logger.info('Weekly prize pool distribution complete, earnings reset.');
 
     } catch (error) {
         logger.error(`Error during prize pool distribution: ${error.message}`);
     }
-});
+}
+
+module.exports = {
+    distributeWeeklyPrizes,
+};

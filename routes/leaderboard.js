@@ -3,10 +3,12 @@ const leaderboardController = require('../controllers/leaderboardController');
 
 const router = express.Router();
 
-// Get leaderboard
-router.get('/', leaderboardController.getLeaderboard);
+router.get('/:playerId', leaderboardController.getLeaderboard);
 
-// Add earnings for a specific player
 router.post('/add-earnings/:playerId', leaderboardController.addEarnings);
+
+router.post('/calculateYesterdayRanks', leaderboardController.calculateYesterdayRanks);
+
+router.post('/weeklyPrizeDistribution', leaderboardController.weeklyPrizeSchedule);
 
 module.exports = router;

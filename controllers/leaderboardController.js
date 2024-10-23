@@ -1,25 +1,16 @@
 const leaderboardService = require('../services/leaderboardService');
 const logger = require('../logger');
+const calculateYesterdayRankScheduler = require('../schedulers/calculateYesterdayRankScheduler');
+const weeklyPrizeScheduler = require('../schedulers/weeklyPrizeScheduler');
 
 const getLeaderboard = async (req, res) => {
     try {
-        const { playerId } = req.query;
+        const { playerId } = req.params;
 
-        const top100 = await leaderboardService.getTopPlayers(100);
+        const leaderboard = await leaderboardService.getLeaderboard(playerId);
 
-        if (playerId) {
-            const playerRank = await leaderboardService.getPlayerRank(playerId);
-            if (playerRank >= 100) {
-                const start = Math.max(0, playerRank - 3);
-                const end = playerRank + 2;
-                const surroundingPlayers = await leaderboardService.getTopPlayers(start, end);
-                return res.json({ top100, surroundingPlayers });
-            }
-        }
+        return res.json({ leaderboard });
 
-        console.log('Top 100:', top100);
-
-        res.json({ top100 });
     } catch (error) {
         console.error('Error fetching leaderboard:', error);
         res.status(500).send('Failed to retrieve leaderboard.');
@@ -37,16 +28,16 @@ const addEarnings = async (req, res) => {
     try {
         const result = await leaderboardService.addEarnings(playerId, earnings);
 
-        if (result.currentRank !== undefined && result.dailyDiff !== undefined) {
-            logger.info(`Earnings updated for player ${playerId}: ${earnings}, Rank: ${result.currentRank}, Daily Diff: ${result.dailyDiff}`);
+        if (result.currentRank !== undefined) {
+            logger.info(`Earnings updated for player ${playerId}: ${earnings}, Rank: ${result.currentRank}`);
             return res.status(200).json({
                 message: `Earnings updated for player ${playerId}`,
                 earnings,
                 currentRank: result.currentRank,
-                dailyDiff: result.dailyDiff
             });
         } else {
-            return res.status(500).json({ message: 'Failed to update daily diff' });
+            logger.warn(`Player ${playerId} not found in the leaderboard`);
+            return res.status(404).json({ message: 'Player not found in the leaderboard' });
         }
     } catch (error) {
         logger.error(`Error adding earnings for player ${playerId}: ${error.message}`);
@@ -54,7 +45,29 @@ const addEarnings = async (req, res) => {
     }
 };
 
+const calculateYesterdayRanks = async (req, res) => {
+    try {
+        await calculateYesterdayRankScheduler.calculateYesterdayRank();
+        return res.status(200).send('Daily rank capture complete.');
+    } catch (error) {
+        logger.error(`Error running daily rank capture: ${error.message}`);
+        res.status(500).send('Failed to run daily rank capture.');
+    }
+}
+
+const weeklyPrizeSchedule = async (req, res) => {
+    try {
+        await weeklyPrizeScheduler.distributeWeeklyPrizes();
+        return res.status(200).send('Weekly prize pool distribution complete.');
+    } catch (error) {
+        logger.error(`Error during prize pool distribution: ${error.message}`);
+        res.status(500).send('Failed to distribute weekly prizes.');
+    }
+}
+
 module.exports = {
     getLeaderboard,
     addEarnings,
+    calculateYesterdayRanks,
+    weeklyPrizeSchedule,
 };
